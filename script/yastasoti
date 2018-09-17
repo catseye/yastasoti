@@ -72,6 +72,14 @@ class LinkTraverser(object):
         self.fragile = fragile
 
     def handle_link(self, url):
+        """Given a URL, process that URL.  Should either return None, meaning
+        it declined to process this URL (for whatever reason), or should return
+        a dict representing the response from processing the URL, which should
+        contain the following keys:
+
+            status_code: an integer.  6xx can be used to indicate internal error.
+
+        """
         raise NotImplementedError
 
     def traverse(self):
@@ -97,7 +105,7 @@ class LinkTraverser(object):
                     response = self.handle_link(url)
                 if response is None:
                     continue
-                status = response.status_code
+                status = response['status_code']
             except Exception as e:
                 if self.fragile:
                     raise
@@ -115,17 +123,27 @@ class LinkTraverser(object):
 
 class LinkChecker(LinkTraverser):
     def handle_link(self, url):
-        return requests.head(url)
+        reponse = requests.head(url)
+        return {
+            'status_code': response.status_code
+        }
 
 
 class WgetLinkChecker(LinkTraverser):
     def handle_link(self, url):
         try:
+            # TODO turn on redirects
             check_call(['wget', '--spider', url])
             print('OK', url)
+            # TODO extract from headers
+            return {
+                'status_code': 200
+            }
         except CalledProcessError as e:
             print('BAD {} {}'.format(e.returncode, url))
-        return None
+            return {
+                'status_code': 600
+            }
 
 
 class LinkArchiver(LinkTraverser):
@@ -142,7 +160,9 @@ class LinkArchiver(LinkTraverser):
         if self.missing_only and os.path.exists(os.path.join(dirname, filename)):
             return None
         response = download(url, dirname, filename)
-        return response
+        return {
+            'status_code': response.status_code
+        }
 
 
 def main(args):
