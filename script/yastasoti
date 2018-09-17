@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from argparse import ArgumentParser
 import hashlib
@@ -7,7 +7,11 @@ import os
 from subprocess import check_call, CalledProcessError
 import sys
 from time import sleep, localtime, strftime
-import urllib
+try:
+    from urllib import unquote, quote_plus
+except ImportError:
+    from urllib.parse import unquote, quote_plus
+assert unquote and quote_plus
 
 import requests
 try:
@@ -20,10 +24,10 @@ def url_to_dirname_and_filename(url):
     parts = url.split(u'/')
     parts = parts[2:]
     domain_name = parts[0]
-    domain_name = urllib.quote_plus(domain_name)
+    domain_name = quote_plus(domain_name)
     parts = parts[1:]
     filename = u'/'.join(parts)
-    filename = urllib.quote_plus(filename.encode('utf-8'))
+    filename = quote_plus(filename.encode('utf-8'))
     if not filename:
         filename = 'index.html'
     return (domain_name, filename)
@@ -96,7 +100,7 @@ class LinkTraverser(object):
                         filename = url.split('#')[0]
                     else:
                         filename = url
-                    filename = urllib.unquote(filename)
+                    filename = unquote(filename)
                     filename = os.path.join(self.article_root, filename)
                     if not os.path.exists(filename):
                         raise ValueError('Local file "{}" does not exist'.format(filename))
