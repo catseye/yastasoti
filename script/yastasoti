@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
-from os.path import realpath, dirname, join
-import sys
-
-sys.path.insert(0, join(dirname(realpath(sys.argv[0])), '..', 'src'))
-
 from argparse import ArgumentParser
-import json
-import sys
 import hashlib
+import json
 import os
+#from subprocess import check_call
+import sys
 from time import sleep, localtime, strftime
 import urllib
 
@@ -73,7 +69,6 @@ class LinkTraverser(object):
     def __init__(self, links, article_root=None, ignore_urls=None):
         self.links = links
         self.article_root = article_root
-        self.missing_only = missing_only
         self.ignore_urls = ignore_urls or []
 
     def handle_link(self, url):
@@ -94,7 +89,7 @@ class LinkTraverser(object):
                     else:
                         filename = url
                     filename = urllib.unquote(filename)
-                    filename = os.path.join(article_root, filename)
+                    filename = os.path.join(self.article_root, filename)
                     if not os.path.exists(filename):
                         raise ValueError('Local file "{}" does not exist'.format(filename))
                     continue
