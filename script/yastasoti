@@ -174,7 +174,7 @@ def main(args):
         help='JSON files containing the links to archive'
     )
 
-    argparser.add_argument('--archive-links-to', metavar='DIRNAME', type=str, default=None,
+    argparser.add_argument('--archive-to', metavar='DIRNAME', type=str, default=None,
         help='Download a copy of all web objects linked to from the entries'
     )
     argparser.add_argument('--archive-missing-only', action='store_true',
@@ -211,9 +211,9 @@ def main(args):
         fragile=options.fragile,
     )
 
-    if options.archive_links_to:
+    if options.archive_to:
         traverser = LinkArchiver(
-            links, options.archive_links_to, missing_only=options.archive_missing_only,
+            links, options.archive_to, missing_only=options.archive_missing_only,
             **common_kwargs
         )
     elif True:

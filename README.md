@@ -19,7 +19,6 @@ Was split off from Feedmark, which doesn't itself need to support this function.
 
 *   archive youtube links with youtube-dl.
 *   logging
-*   ignore certain URLs
 *   Handle failures (redirects, etc) better.  Fall back to external tool like `wget` or `curl`.
 
 ### Examples ###
@@ -33,13 +32,20 @@ requests to check that the resources exist.  It will not fetch them.
 
 Archive stuff off teh internets:
 
-    yastasoti --archive-links-to=downloads links.json
+    cat >links.json << EOF
+    [
+        {
+            "url": "http://catseye.tc/"
+        }
+    ]
+    EOF
+    yastasoti --archive-to=downloads links.json
 
-If it is only desired that the links be checked, `--check-links` will
-make `HEAD` requests and will not save any of the responses.
+### Requirements ###
 
-Requirements: requests
+Python 2.7 for sure, Python 3.x not sure, will need to run some tests.
 
-Optional dependencies: tqdm
+Requires `requests` Python library and/or `wget` external utility to make
+network requests.
 
-TODO: Update this documentation and make it make sense
+If `tqdm` Python library is installed, will display a nice progress bar.
