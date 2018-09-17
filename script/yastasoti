@@ -70,12 +70,14 @@ def download(url, dirname, filename):
 delay_between_fetches = 0
 
 
-def archive_links(links, article_root=None, dest_dir=None, missing_only=False):
+def archive_links(links, article_root=None, dest_dir=None, missing_only=False, ignore_urls=[]):
     """If dest_dir is None, links will only be checked for existence, not downloaded."""
 
     failures = []
     for link in tqdm(links, total=len(links)):
         url = link['url']
+        if url in ignore_urls:
+            continue
         try:
             if url.startswith(('#',)):
                 continue
@@ -131,6 +133,9 @@ def main(args):
     argparser.add_argument('--article-root', metavar='DIRNAME', type=str, default='.',
         help='Directory in which local files found when checking or archiving links should be located'
     )
+    argparser.add_argument('--ignore-urls', metavar='TARGETS', type=str, default=None,
+        help='Comma-separated list of link targets that should not even try to be fetched'
+    )
 
     options = argparser.parse_args(sys.argv[1:])
 
@@ -143,11 +148,17 @@ def main(args):
                 data = json.loads(f.read())
         links.extend(data)
 
+    if options.ignore_urls is None:
+        options.ignore_urls = []
+    else:
+        options.ignore_urls = options.ignore_urls.split(',')
+
     result = archive_links(
         links,
         article_root=options.article_root,
         dest_dir=options.archive_links_to,
         missing_only=options.archive_missing_only,
+        ignore_urls=options.ignore_urls,
     )
     sys.stdout.write(json.dumps(result, indent=4, sort_keys=True))
 
