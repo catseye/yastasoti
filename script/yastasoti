@@ -70,7 +70,7 @@ def download(url, dirname, filename):
 delay_between_fetches = 0
 
 class LinkTraverser(object):
-    def __init__(self, links, article_root=None, missing_only=False, ignore_urls=None):
+    def __init__(self, links, article_root=None, ignore_urls=None):
         self.links = links
         self.article_root = article_root
         self.missing_only = missing_only
@@ -122,9 +122,10 @@ class LinkChecker(LinkTraverser):
 
 
 class LinkArchiver(LinkTraverser):
-    def __init__(self, links, dest_dir, **kwargs):
+    def __init__(self, links, dest_dir, missing_only=False, **kwargs):
         super().__init__(links, **kwargs)
         self.dest_dir = dest_dir
+        self.missing_only = missing_only
 
     def handle_link(self, url):
         dirname, filename = url_to_dirname_and_filename(url)
@@ -184,7 +185,6 @@ def main(args):
     else:
         traverser = LinkChecker(links,
             article_root=options.article_root,
-            missing_only=options.archive_missing_only,
             ignore_urls=options.ignore_urls,
         )
 
