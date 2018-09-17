@@ -136,8 +136,9 @@ class LinkTraverser(object):
 
 class LinkChecker(LinkTraverser):
     def handle_link(self, url):
-        response = requests.head(url)
+        response = requests.head(url, allow_redirects=True)
         return {
+            'url': response.url,
             'status_code': response.status_code
         }
 
