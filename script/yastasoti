@@ -87,7 +87,7 @@ class LinkTraverser(object):
         raise NotImplementedError
 
     def traverse(self):
-        failures = []
+        self.results = []
         for link in tqdm(self.links, total=len(self.links)):
             url = link['url']
             if url in self.ignore_urls:
@@ -109,20 +109,25 @@ class LinkTraverser(object):
                     response = self.handle_link(url)
                 if response is None:
                     continue
-                status = response['status_code']
             except Exception as e:
                 if self.fragile:
                     raise
-                status = str(e)
-            if status not in (200, 301, 302, 303):
-                failures.append({
-                    'status': status,
-                    'url': url,
-                    'link': link,
-                })
+                response = {
+                    "status_code": 600,
+                    "error": "{}: {}".format(e.__class__.__name, e)
+                }
+            self.results.append({
+                'response': response,
+                'url': url,
+                'link': link,
+            })
             if self.delay_between_requests > 0.0:
                 sleep(self.delay_between_requests)
-        return failures
+
+    def failures(self):
+        for result in self.results:
+            if result['response']['status_code'] != 200:
+                yield result
 
 
 class LinkChecker(LinkTraverser):
@@ -220,12 +225,13 @@ def main(args):
             links, options.archive_to, missing_only=options.archive_missing_only,
             **common_kwargs
         )
-    elif True:
+    elif False:
         traverser = WgetLinkChecker(links, **common_kwargs)
     else:
         traverser = LinkChecker(links, **common_kwargs)
 
-    result = traverser.traverse()
+    traverser.traverse()
+    result = list(traverser.failures())
     sys.stdout.write(json.dumps(result, indent=4, sort_keys=True))
 
 
