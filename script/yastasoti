@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import hashlib
 import json
 import os
-#from subprocess import check_call
+from subprocess import check_call, CalledProcessError
 import sys
 from time import sleep, localtime, strftime
 import urllib
@@ -98,6 +98,7 @@ class LinkTraverser(object):
                     continue
                 status = response.status_code
             except Exception as e:
+                # TODO: raise
                 status = str(e)
             if status not in (200, 301, 302, 303):
                 failures.append({
@@ -113,6 +114,16 @@ class LinkTraverser(object):
 class LinkChecker(LinkTraverser):
     def handle_link(self, url):
         return requests.head(url)
+
+
+class WgetLinkChecker(LinkTraverser):
+    def handle_link(self, url):
+        try:
+            check_call(['wget', '--spider', url])
+            print('OK', url)
+        except CalledProcessError as e:
+            print('BAD {} {}'.format(e.returncode, url))
+        return None
 
 
 class LinkArchiver(LinkTraverser):
@@ -179,6 +190,8 @@ def main(args):
             links, options.archive_links_to, missing_only=options.archive_missing_only,
             **common_kwargs
         )
+    elif True:
+        traverser = WgetLinkChecker(links, **common_kwargs)
     else:
         traverser = LinkChecker(links, **common_kwargs)
 
