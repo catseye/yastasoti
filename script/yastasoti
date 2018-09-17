@@ -63,13 +63,12 @@ def download(url, dirname, filename):
     return response
 
 
-delay_between_fetches = 0
-
 class LinkTraverser(object):
-    def __init__(self, links, article_root=None, ignore_urls=None):
+    def __init__(self, links, article_root=None, ignore_urls=None, delay_between_requests=0.0):
         self.links = links
         self.article_root = article_root
         self.ignore_urls = ignore_urls or []
+        self.delay_between_requests = delay_between_requests
 
     def handle_link(self, url):
         raise NotImplementedError
@@ -106,8 +105,8 @@ class LinkTraverser(object):
                     'url': url,
                     'link': link,
                 })
-            if delay_between_fetches > 0:
-                sleep(delay_between_fetches)
+            if self.delay_between_requests > 0.0:
+                sleep(self.delay_between_requests)
         return failures
 
 
@@ -154,6 +153,9 @@ def main(args):
     argparser.add_argument('--ignore-urls', metavar='URLS', type=str, default=None,
         help='Comma-separated list of link targets that should not even try to be fetched'
     )
+    argparser.add_argument('--delay-between-requests', metavar='SECONDS', type=float, default=0.0,
+        help='Delay (in seconds, fractions allowed) between successive network requests'
+    )
 
     options = argparser.parse_args(sys.argv[1:])
 
@@ -166,25 +168,21 @@ def main(args):
                 data = json.loads(f.read())
         links.extend(data)
 
-    if options.ignore_urls is None:
-        options.ignore_urls = []
-    else:
-        options.ignore_urls = options.ignore_urls.split(',')
+    common_kwargs = dict(
+        article_root=options.article_root,
+        ignore_urls=[] if options.ignore_urls is None else options.ignore_urls.split(','),
+        delay_between_requests=options.delay_between_requests,
+    )
 
     if options.archive_links_to:
-        traverser = LinkArchiver(links, options.archive_links_to,
-            article_root=options.article_root,
-            missing_only=options.archive_missing_only,
-            ignore_urls=options.ignore_urls,
+        traverser = LinkArchiver(
+            links, options.archive_links_to, missing_only=options.archive_missing_only,
+            **common_kwargs
         )
     else:
-        traverser = LinkChecker(links,
-            article_root=options.article_root,
-            ignore_urls=options.ignore_urls,
-        )
+        traverser = LinkChecker(links, **common_kwargs)
 
     result = traverser.traverse()
-
     sys.stdout.write(json.dumps(result, indent=4, sort_keys=True))
 
 
