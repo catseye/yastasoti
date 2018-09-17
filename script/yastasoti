@@ -70,8 +70,7 @@ def download(url, dirname, filename):
 delay_between_fetches = 0
 
 
-def archive_links(links, article_root=None, dest_dir=None, missing_only=False, ignore_urls=[]):
-    """If dest_dir is None, links will only be checked for existence, not downloaded."""
+def foreach_link(links, callback, article_root=None, missing_only=False, ignore_urls=[]):
 
     failures = []
     for link in tqdm(links, total=len(links)):
@@ -91,16 +90,10 @@ def archive_links(links, article_root=None, dest_dir=None, missing_only=False, i
                 if not os.path.exists(filename):
                     raise ValueError('Local file "{}" does not exist'.format(filename))
                 continue
-            elif dest_dir is not None:
-                dirname, filename = url_to_dirname_and_filename(url)
-                dirname = os.path.join(dest_dir, dirname)
-                if not os.path.exists(dirname):
-                    os.makedirs(dirname)
-                if missing_only and os.path.exists(os.path.join(dirname, filename)):
-                    continue
-                response = download(url, dirname, filename)
             else:
-                response = requests.head(url)
+                response = callback(url)
+            if response is None:
+                continue
             status = response.status_code
         except Exception as e:
             status = str(e)
@@ -113,6 +106,29 @@ def archive_links(links, article_root=None, dest_dir=None, missing_only=False, i
         if delay_between_fetches > 0:
             sleep(delay_between_fetches)
     return failures
+
+
+def check_links(links, **kwargs):
+    def callback(url):
+        return requests.head(url)
+    return foreach_link(links, callback, **kwargs)
+
+
+def archive_links_to(links, dest_dir, **kwargs):
+
+    missing_only = kwargs.get('missing_only', False)
+
+    def callback(url):
+        dirname, filename = url_to_dirname_and_filename(url)
+        dirname = os.path.join(dest_dir, dirname)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+        if missing_only and os.path.exists(os.path.join(dirname, filename)):
+            return None
+        response = download(url, dirname, filename)
+        return response
+
+    return foreach_link(links, callback, **kwargs)
 
 
 def main(args):
@@ -133,7 +149,7 @@ def main(args):
     argparser.add_argument('--article-root', metavar='DIRNAME', type=str, default='.',
         help='Directory in which local files found when checking or archiving links should be located'
     )
-    argparser.add_argument('--ignore-urls', metavar='TARGETS', type=str, default=None,
+    argparser.add_argument('--ignore-urls', metavar='URLS', type=str, default=None,
         help='Comma-separated list of link targets that should not even try to be fetched'
     )
 
@@ -153,13 +169,22 @@ def main(args):
     else:
         options.ignore_urls = options.ignore_urls.split(',')
 
-    result = archive_links(
-        links,
-        article_root=options.article_root,
-        dest_dir=options.archive_links_to,
-        missing_only=options.archive_missing_only,
-        ignore_urls=options.ignore_urls,
-    )
+    if options.archive_links_to:
+        result = archive_links_to(
+            links,
+            options.archive_links_to,
+            article_root=options.article_root,
+            missing_only=options.archive_missing_only,
+            ignore_urls=options.ignore_urls,
+        )
+    else:
+        result = check_links(
+            links,
+            article_root=options.article_root,
+            missing_only=options.archive_missing_only,
+            ignore_urls=options.ignore_urls,
+        )
+
     sys.stdout.write(json.dumps(result, indent=4, sort_keys=True))
 
 
