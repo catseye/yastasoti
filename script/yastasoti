@@ -140,7 +140,7 @@ class LinkTraverser(object):
 
 class LinkChecker(LinkTraverser):
     def handle_link(self, url):
-        logger.info("checking {}".format(url))
+        logger.info(u"checking {}".format(url).encode('utf-8'))
         response = requests.head(url, allow_redirects=True, headers={
             'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0',
         })
@@ -157,7 +157,7 @@ class LinkArchiver(LinkTraverser):
         self.missing_only = missing_only
 
     def handle_link(self, url):
-        logger.info("archiving {}".format(url))
+        logger.info(u"archiving {}".format(url).encode('utf-8'))
         dirname, filename = url_to_dirname_and_filename(url)
         dirname = os.path.join(self.dest_dir, dirname)
         if not os.path.exists(dirname):

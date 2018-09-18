@@ -10,7 +10,7 @@ Was split off from Feedmark, which doesn't itself need to support this function.
 *   input is a JSON list of objects containing links (such as those produced by Feedmark)
 *   output is a JSON list of objects that could not be retrieved, which can be fed back
     into the script as input
-*   checks links with `HEAD` requests by default; if `--archive-links-to` is given,
+*   checks links with `HEAD` requests by default; if `--archive-to` is given,
     fetches a copy of each resource with `GET` and saves it to disk
 *   tries to be idempotent and not create a new local file if the remote file hasn't changed
 *   handles links that are local files; checks if the file exists locally
@@ -21,6 +21,7 @@ Was split off from Feedmark, which doesn't itself need to support this function.
 *   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
 *   Allow use of an external tool like `wget` or `curl` to do fetching.
 *   Allow categorization of downloaded stuff.
+*   If the same link occurs more than once in the input, don't request it more than once.
 
 ### Examples ###
 
