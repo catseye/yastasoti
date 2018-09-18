@@ -18,7 +18,7 @@ Was split off from Feedmark, which doesn't itself need to support this function.
 #### Planned features ####
 
 *   Archive youtube links with youtube-dl.
-*   Handle failures (redirects, etc) better.
+*   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
 *   Allow use of an external tool like `wget` or `curl` to do fetching.
 *   Allow categorization of downloaded stuff.
 
@@ -28,7 +28,7 @@ Check that the links in a set of Feedmark documents all resolve:
 
     feedmark --output-links article/*.md | yastasoti --article-root=article/ - | tee results.json
 
-Since no `--archive-links` options were given, this will make only `HEAD`
+Since `--archive-to` was not specified, this will make only `HEAD`
 requests to check that the resources exist.  It will not fetch them.
 
 Archive stuff off teh internets:
@@ -46,7 +46,6 @@ Archive stuff off teh internets:
 
 Python 2.7 for sure, Python 3.x not sure, will need to run some tests.
 
-Requires `requests` Python library and/or `wget` external utility to make
-network requests.
+Requires `requests` Python library to make network requests.
 
 If `tqdm` Python library is installed, will display a nice progress bar.
