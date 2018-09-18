@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
+#
+# yastasoti -- Yet another script to archive stuff off teh internets.
+# This work is in the public domain.
+#
+
 from argparse import ArgumentParser
 import hashlib
 import json
 import logging
 import os
-from subprocess import check_call, CalledProcessError
 import sys
 from time import sleep, localtime, strftime
 try:
@@ -136,28 +140,13 @@ class LinkTraverser(object):
 
 class LinkChecker(LinkTraverser):
     def handle_link(self, url):
-        response = requests.head(url, allow_redirects=True)
+        response = requests.head(url, allow_redirects=True, headers={
+            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0',
+        })
         return {
             'url': response.url,
             'status_code': response.status_code
         }
-
-
-class WgetLinkChecker(LinkTraverser):
-    def handle_link(self, url):
-        try:
-            # TODO turn on redirects
-            check_call(['wget', '--spider', url])
-            print('OK', url)
-            # TODO extract from headers
-            return {
-                'status_code': 200
-            }
-        except CalledProcessError as e:
-            print('BAD {} {}'.format(e.returncode, url))
-            return {
-                'status_code': 600
-            }
 
 
 class LinkArchiver(LinkTraverser):
@@ -232,8 +221,6 @@ def main(args):
             links, options.archive_to, missing_only=options.archive_missing_only,
             **common_kwargs
         )
-    elif False:
-        traverser = WgetLinkChecker(links, **common_kwargs)
     else:
         traverser = LinkChecker(links, **common_kwargs)
 
