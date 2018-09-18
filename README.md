@@ -45,8 +45,10 @@ Archive stuff off teh internets:
 
 ### Requirements ###
 
-Python 2.7 for sure, Python 3.x not sure, will need to run some tests.
+Tested under Python 2.7.12.  Seems to work under Python 3.5.2 as well,
+at least the link-checking parts.
 
-Requires `requests` Python library to make network requests.
+Requires `requests` Python library to make network requests.  Tested
+with version 2.17.3.
 
 If `tqdm` Python library is installed, will display a nice progress bar.
