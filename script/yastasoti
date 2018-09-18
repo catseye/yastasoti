@@ -169,8 +169,6 @@ class LinkArchiver(LinkTraverser):
 
 
 def main(args):
-    #logging.basicConfig(level=logging.INFO)
-
     argparser = ArgumentParser()
 
     # Checks if the links are resolvable, and optionally downloads a copy of each
@@ -197,8 +195,14 @@ def main(args):
     argparser.add_argument('--ignore-urls', metavar='URLS', type=str, default=None,
         help='Comma-separated list of link targets that should not even try to be fetched'
     )
+    argparser.add_argument('--log-to', metavar='FILENAME', type=str, default=None,
+        help='Enable logging and direct the messages to the specified file'
+    )
 
     options = argparser.parse_args(sys.argv[1:])
+
+    if options.log_to:
+        logging.basicConfig(level=logging.INFO, filename=options.log_to)
 
     links = []
     for filename in options.input_files:

@@ -17,9 +17,10 @@ Was split off from Feedmark, which doesn't itself need to support this function.
 
 #### Planned features ####
 
-*   archive youtube links with youtube-dl.
-*   logging
-*   Handle failures (redirects, etc) better.  Fall back to external tool like `wget` or `curl`.
+*   Archive youtube links with youtube-dl.
+*   Handle failures (redirects, etc) better.
+*   Allow use of an external tool like `wget` or `curl` to do fetching.
+*   Allow categorization of downloaded stuff.
 
 ### Examples ###
 
