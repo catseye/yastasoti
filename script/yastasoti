@@ -6,6 +6,7 @@
 #
 
 from argparse import ArgumentParser
+from fnmatch import fnmatch
 import hashlib
 import json
 import logging
@@ -151,15 +152,22 @@ class LinkChecker(LinkTraverser):
 
 
 class LinkArchiver(LinkTraverser):
-    def __init__(self, links, dest_dir, missing_only=False, **kwargs):
-        super().__init__(links, **kwargs)
-        self.dest_dir = dest_dir
+    def __init__(self, links, router, missing_only=False, **kwargs):
+        super(LinkArchiver, self).__init__(links, **kwargs)
+        self.router = router
         self.missing_only = missing_only
 
+    def select_dest_dir(self, url):
+        for key in sorted(self.router.keys(), key=lambda x: 0-len(x)):
+            if fnmatch(url, key):
+                return self.router[key]
+        raise NotImplementedError("archive router could not resolve {}".format(url))
+
     def handle_link(self, url):
-        logger.info(u"archiving {}".format(url).encode('utf-8'))
         dirname, filename = url_to_dirname_and_filename(url)
-        dirname = os.path.join(self.dest_dir, dirname)
+        dest_dir = self.select_dest_dir(url)
+        dirname = os.path.join(dest_dir, dirname)
+        logger.info(u"archiving {} to {}".format(url, dirname).encode('utf-8'))
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         if self.missing_only and os.path.exists(os.path.join(dirname, filename)):
@@ -180,10 +188,13 @@ def main(args):
     )
 
     argparser.add_argument('--archive-to', metavar='DIRNAME', type=str, default=None,
-        help='Download a copy of all web objects linked to from the entries'
+        help='Download a copy of each of the links, if changed, to the given directory'
     )
     argparser.add_argument('--archive-missing-only', action='store_true',
         help='When archiving links, only download the link if it is not already archived'
+    )
+    argparser.add_argument('--archive-via', metavar='ROUTERFILE', type=str, default=None,
+        help='Download links and save each in the directory given in the router file'
     )
     argparser.add_argument('--article-root', metavar='DIRNAME', type=str, default='.',
         help='Directory in which local files found when checking or archiving links should be located'
@@ -222,9 +233,21 @@ def main(args):
         fragile=options.fragile,
     )
 
+    if options.archive_to and options.archive_via:
+        raise NotImplementedError("Specify either --archive-to or --archive-via, not both")
+
+    router = None
     if options.archive_to:
+        router = {
+            "*": options.archive_to
+        }
+    elif options.archive_via:
+        with open(options.archive_via, 'r') as f:
+            router = json.loads(f.read())
+
+    if router:
         traverser = LinkArchiver(
-            links, options.archive_to, missing_only=options.archive_missing_only,
+            links, router, missing_only=options.archive_missing_only,
             **common_kwargs
         )
     else:

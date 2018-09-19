@@ -10,17 +10,30 @@ Was split off from Feedmark, which doesn't itself need to support this function.
 *   input is a JSON list of objects containing links (such as those produced by Feedmark)
 *   output is a JSON list of objects that could not be retrieved, which can be fed back
     into the script as input
-*   checks links with `HEAD` requests by default; if `--archive-to` is given,
-    fetches a copy of each resource with `GET` and saves it to disk
+*   checks links with `HEAD` requests by default.  `--archive-to` causes each link to be
+    fetched with `GET` and saved to the specified directory.  `--archive-via` specifies an
+    _archive router_ which causes each link to be fetched, and saved to a directory
+    which is selected based on the URL of the link.
 *   tries to be idempotent and not create a new local file if the remote file hasn't changed
 *   handles links that are local files; checks if the file exists locally
+
+#### Archive routers ####
+
+An archive router (used with `--archive-via`) is a JSON file that looks like this:
+
+    {
+        "http://catseye.tc/*": "/dev/null",
+        "https://footu.be/*": "footube/",
+        "*": "archive/"
+    }
+
+Three guesses as to what these parts mean.
 
 #### Planned features ####
 
 *   Archive youtube links with youtube-dl.
 *   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
 *   Allow use of an external tool like `wget` or `curl` to do fetching.
-*   Allow categorization of downloaded stuff.
 *   If the same link occurs more than once in the input, don't request it more than once.
 
 ### Examples ###
