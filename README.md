@@ -17,35 +17,19 @@ Was split off from Feedmark, which doesn't itself need to support this function.
 *   tries to be idempotent and not create a new local file if the remote file hasn't changed
 *   handles links that are local files; checks if the file exists locally
 
-#### Archive routers ####
-
-An archive router (used with `--archive-via`) is a JSON file that looks like this:
-
-    {
-        "http://catseye.tc/*": "/dev/null",
-        "https://footu.be/*": "footube/",
-        "*": "archive/"
-    }
-
-Three guesses as to what these parts mean.
-
-#### Planned features ####
-
-*   Archive youtube links with youtube-dl.
-*   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
-*   Allow use of an external tool like `wget` or `curl` to do fetching.
-*   If the same link occurs more than once in the input, don't request it more than once.
-
 ### Examples ###
 
-Check that the links in a set of Feedmark documents all resolve:
+#### Check all links in a set of Feedmark documents ####
 
     feedmark --output-links article/*.md | yastasoti --article-root=article/ - | tee results.json
 
-Since `--archive-to` was not specified, this will make only `HEAD`
-requests to check that the resources exist.  It will not fetch them.
+This will make only `HEAD` requests to check that the resources exist.
+It will not fetch them.  The ones that could not be fetches will appear
+in `results.json`, and you can run yastasoti on that again to re-try:
 
-Archive stuff off teh internets:
+    yastasoti --article-root=article/ results.json | tee results2.json
+
+#### Archive stuff off teh internets ####
 
     cat >links.json << EOF
     [
@@ -56,6 +40,20 @@ Archive stuff off teh internets:
     EOF
     yastasoti --archive-to=downloads links.json
 
+#### Categorize archived materials with a router ####
+
+An archive router (used with `--archive-via`) is a JSON file that looks like this:
+
+    {
+        "http://catseye.tc/*": "/dev/null",
+        "https://footu.be/*": "footube/",
+        "*": "archive/"
+    }
+
+Three guesses as to what these parts mean.  Then you use it like
+
+    yastasoti --archive-via=router.json links.json
+
 ### Requirements ###
 
 Tested under Python 2.7.12.  Seems to work under Python 3.5.2 as well,
@@ -65,3 +63,10 @@ Requires `requests` Python library to make network requests.  Tested
 with version 2.17.3.
 
 If `tqdm` Python library is installed, will display a nice progress bar.
+
+### TODO ####
+
+*   Archive youtube links with youtube-dl.
+*   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
+*   Allow use of an external tool like `wget` or `curl` to do fetching.
+*   If the same link occurs more than once in the input, don't request it more than once.
