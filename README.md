@@ -69,4 +69,3 @@ If `tqdm` Python library is installed, will display a nice progress bar.
 *   Archive youtube links with youtube-dl.
 *   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
 *   Allow use of an external tool like `wget` or `curl` to do fetching.
-*   If the same link occurs more than once in the input, don't request it more than once.

@@ -56,22 +56,28 @@ def compute_hash(filename):
 def download(url, dirname, filename):
     response = requests.get(url, stream=True)
     partname = os.path.join(dirname, filename + '_part')
+    logger.info(u"downloading '{}' to {}".format(url, partname).encode('utf-8'))
     with open(partname, "wb") as f:
         for data in response.iter_content():
             f.write(data)
     destname = os.path.join(dirname, filename)
     if os.path.exists(destname):
+        logger.info(u"{} exists, computing hashes".format(destname).encode('utf-8'))
         desthash = compute_hash(destname)
         parthash = compute_hash(partname)
         if desthash == parthash:
+            logger.info(u"hash {} matches, deleting {}".format(desthash, partname).encode('utf-8'))
             os.unlink(partname)
         else:
+            logger.info(u"incoming hash {} does not match existing hash {}".format(parthash, desthash).encode('utf-8'))
             mtime = os.path.getmtime(destname)
             timestring = strftime('%Y.%m%d.%H%M%S', localtime(mtime))
             archname = '{}_REV{}'.format(destname, timestring)
+            logger.info(u"moving {} to {} and {} to {}".format(desthash, archname, partname, destname).encode('utf-8'))
             os.rename(destname, archname)
             os.rename(partname, destname)
     else:
+        logger.info(u"moving {} to {}".format(partname, destname).encode('utf-8'))
         os.rename(partname, destname)
     return response
 
@@ -97,11 +103,18 @@ class LinkTraverser(object):
 
     def traverse(self):
         self.results = []
+        processed_urls = set()
         for link in tqdm(self.links, total=len(self.links)):
-            url = link['url']
-            if url in self.ignore_urls:
-                continue
             try:
+                url = link['url']
+                logger.info(u"processing '{}'".format(url).encode('utf-8'))
+                if url in self.ignore_urls:
+                    logger.info(u"URL is being ignored, skipping")
+                    continue
+                if url in processed_urls:
+                    logger.info(u"URL has already been processed, skipping")
+                    continue
+                processed_urls.add(url)
                 if url.startswith(('#',)):
                     continue
                 elif not url.startswith(('http://', 'https://')):
@@ -170,7 +183,9 @@ class LinkArchiver(LinkTraverser):
         logger.info(u"archiving {} to {}".format(url, dirname).encode('utf-8'))
         if not os.path.exists(dirname):
             os.makedirs(dirname)
-        if self.missing_only and os.path.exists(os.path.join(dirname, filename)):
+        existing_file = os.path.join(dirname, filename)
+        if self.missing_only and os.path.exists(existing_file):
+            logger.info(u"file {} already exists, not downloading".format(existing_file).encode('utf-8'))
             return None
         response = download(url, dirname, filename)
         return {
