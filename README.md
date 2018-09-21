@@ -1,7 +1,7 @@
 yastasoti
 =========
 
-_Version 0.1-PRE_
+_Version 0.1_
 
 Yet another script to archive stuff off teh internets.
 
