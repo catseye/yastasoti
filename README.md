@@ -1,9 +1,14 @@
 yastasoti
 =========
 
+_Version 0.1-PRE_
+
 Yet another script to archive stuff off teh internets.
 
-Was split off from Feedmark, which doesn't itself need to support this function.
+It's not a spider that automatically crawls previously undiscovered pages — it's intended
+to be run by a human to make backups of pages they have already read and recorded.
+
+It was split off from [Feedmark][], which doesn't itself need to support this function.
 
 ### Features ###
 
@@ -16,6 +21,8 @@ Was split off from Feedmark, which doesn't itself need to support this function.
     which is selected based on the URL of the link.
 *   tries to be idempotent and not create a new local file if the remote file hasn't changed
 *   handles links that are local files; checks if the file exists locally
+*   can log its actions verbosely to a specified logfile
+*   source code is a single, public-domain file with a single dependency (`requests`)
 
 ### Examples ###
 
@@ -50,17 +57,21 @@ An archive router (used with `--archive-via`) is a JSON file that looks like thi
         "*": "archive/"
     }
 
-Three guesses as to what these parts mean.  Then you use it like
+If a URL matches more than one pattern, the longest pattern will be selected.
+If the destination is `/dev/null` it will be treated specially — the file will
+not be retrieved at all.  If no pattern matches, an error will be raised.
+
+To use an archive router once it has been written:
 
     yastasoti --archive-via=router.json links.json
 
 ### Requirements ###
 
 Tested under Python 2.7.12.  Seems to work under Python 3.5.2 as well,
-at least the link-checking parts.
+but this is not so official.
 
 Requires `requests` Python library to make network requests.  Tested
-with version 2.17.3.
+with `requests` version 2.17.3.
 
 If `tqdm` Python library is installed, will display a nice progress bar.
 
@@ -69,3 +80,5 @@ If `tqdm` Python library is installed, will display a nice progress bar.
 *   Archive youtube links with youtube-dl.
 *   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
 *   Allow use of an external tool like `wget` or `curl` to do fetching.
+
+[Feedmark]: http://catseye.tc/node/Feedmark
