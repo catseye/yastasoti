@@ -5,8 +5,8 @@ _Version 0.1-PRE_
 
 Yet another script to archive stuff off teh internets.
 
-It's not a spider that automatically crawls previously undiscovered pages — it's intended
-to be run by a human to make backups of pages they have already read and recorded.
+It's not a spider that automatically crawls previously undiscovered webpages — it's intended
+to be run by a human to make backups of resources they have already seen and recorded the URLs of.
 
 It was split off from [Feedmark][], which doesn't itself need to support this function.
 
@@ -80,5 +80,6 @@ If `tqdm` Python library is installed, will display a nice progress bar.
 *   Archive youtube links with youtube-dl.
 *   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
 *   Allow use of an external tool like `wget` or `curl` to do fetching.
+*   Multiple `--article-roots`.
 
 [Feedmark]: http://catseye.tc/node/Feedmark
