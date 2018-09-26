@@ -181,6 +181,8 @@ class LinkArchiver(LinkTraverser):
     def handle_link(self, link):
         url = link['url']
         dirname, filename = url_to_dirname_and_filename(url)
+        if 'dest_filename' in link:
+            filename = link['dest_filename']
         dest_dir = self.select_dest_dir(url)
         if dest_dir == '/dev/null':
             logger.info(u"{} routed to {}, skipping".format(url, dest_dir).encode('utf-8'))
@@ -188,7 +190,7 @@ class LinkArchiver(LinkTraverser):
                 'status_code': 200
             }
         dirname = os.path.join(dest_dir, dirname)
-        logger.info(u"archiving {} to {}".format(url, dirname).encode('utf-8'))
+        logger.info(u"archiving {} to {}/{}".format(url, dirname, filename).encode('utf-8'))
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         existing_file = os.path.join(dirname, filename)

@@ -47,6 +47,18 @@ in `results.json`, and you can run yastasoti on that again to re-try:
     EOF
     yastasoti --archive-to=downloads links.json
 
+#### Override the filename the stuff is archived as ####
+
+    cat >links.json << EOF
+    [
+        {
+            "url": "http://catseye.tc/",
+            "dest_filename": "home_page.html"
+        }
+    ]
+    EOF
+    yastasoti --archive-to=downloads links.json
+
 #### Categorize archived materials with a router ####
 
 An archive router (used with `--archive-via`) is a JSON file that looks like this:
