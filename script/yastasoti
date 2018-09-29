@@ -29,6 +29,9 @@ except ImportError:
 logger = logging.getLogger("yastasoti")
 
 
+CHUNK_SIZE = 8192
+
+
 def url_to_dirname_and_filename(url):
     parts = url.split(u'/')
     parts = parts[2:]
@@ -46,7 +49,7 @@ def compute_hash(filename):
     collector = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
-            data = f.read(1024)
+            data = f.read(CHUNK_SIZE)
             if not data:
                 break
             collector.update(data)
@@ -58,7 +61,7 @@ def download(url, dirname, filename):
     partname = os.path.join(dirname, filename + '_part')
     logger.info(u"downloading '{}' to {}".format(url, partname).encode('utf-8'))
     with open(partname, "wb") as f:
-        for data in response.iter_content():
+        for data in response.iter_content(chunk_size=CHUNK_SIZE):
             f.write(data)
     destname = os.path.join(dirname, filename)
     if os.path.exists(destname):
