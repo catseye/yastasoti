@@ -1,7 +1,7 @@
 yastasoti
 =========
 
-_Version 0.1_
+_Version 0.2_
 
 Yet another script to archive stuff off teh internets.
 
@@ -48,6 +48,10 @@ in `results.json`, and you can run yastasoti on that again to re-try:
     yastasoti --archive-to=downloads links.json
 
 #### Override the filename the stuff is archived as ####
+
+By default, the subdirectory and filename to which the stuff is archived are
+based on the site's domain name and the stuff's path.  The filename, however,
+can be overridden if the input JSON contains a `dest_filename` field.
 
     cat >links.json << EOF
     [
