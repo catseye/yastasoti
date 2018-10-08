@@ -29,6 +29,9 @@ except ImportError:
 logger = logging.getLogger("yastasoti")
 
 
+CHUNK_SIZE = 8192
+
+
 def url_to_dirname_and_filename(url):
     parts = url.split(u'/')
     parts = parts[2:]
@@ -46,7 +49,7 @@ def compute_hash(filename):
     collector = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
-            data = f.read(1024)
+            data = f.read(CHUNK_SIZE)
             if not data:
                 break
             collector.update(data)
@@ -58,7 +61,7 @@ def download(url, dirname, filename):
     partname = os.path.join(dirname, filename + '_part')
     logger.info(u"downloading '{}' to {}".format(url, partname).encode('utf-8'))
     with open(partname, "wb") as f:
-        for data in response.iter_content():
+        for data in response.iter_content(chunk_size=CHUNK_SIZE):
             f.write(data)
     destname = os.path.join(dirname, filename)
     if os.path.exists(destname):
@@ -90,11 +93,12 @@ class LinkTraverser(object):
         self.delay_between_requests = delay_between_requests
         self.fragile = fragile
 
-    def handle_link(self, url):
-        """Given a URL, process that URL.  Should either return None, meaning
+    def handle_link(self, link):
+        """Given a dict containing a URL under the key `url` (and possibly
+        other information), process that URL.  Should either return None, meaning
         it declined to process this URL (for whatever reason), or should return
         a dict representing the response from processing the URL, which should
-        contain the following keys:
+        contain (at least) the following keys:
 
             status_code: an integer.  6xx can be used to indicate internal error.
 
@@ -128,7 +132,7 @@ class LinkTraverser(object):
                         raise ValueError('Local file "{}" does not exist'.format(filename))
                     continue
                 else:
-                    response = self.handle_link(url)
+                    response = self.handle_link(link)
                 if response is None:
                     continue
             except Exception as e:
@@ -153,7 +157,8 @@ class LinkTraverser(object):
 
 
 class LinkChecker(LinkTraverser):
-    def handle_link(self, url):
+    def handle_link(self, link):
+        url = link['url']
         logger.info(u"checking {}".format(url).encode('utf-8'))
         response = requests.head(url, allow_redirects=True, headers={
             'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0',
@@ -176,8 +181,11 @@ class LinkArchiver(LinkTraverser):
                 return self.router[key]
         raise NotImplementedError("archive router could not resolve {}".format(url))
 
-    def handle_link(self, url):
+    def handle_link(self, link):
+        url = link['url']
         dirname, filename = url_to_dirname_and_filename(url)
+        if 'dest_filename' in link:
+            filename = link['dest_filename']
         dest_dir = self.select_dest_dir(url)
         if dest_dir == '/dev/null':
             logger.info(u"{} routed to {}, skipping".format(url, dest_dir).encode('utf-8'))
@@ -185,7 +193,7 @@ class LinkArchiver(LinkTraverser):
                 'status_code': 200
             }
         dirname = os.path.join(dest_dir, dirname)
-        logger.info(u"archiving {} to {}".format(url, dirname).encode('utf-8'))
+        logger.info(u"archiving {} to {}/{}".format(url, dirname, filename).encode('utf-8'))
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         existing_file = os.path.join(dirname, filename)
@@ -232,7 +240,7 @@ def main(args):
         help='Enable logging and direct the messages to the specified file'
     )
 
-    options = argparser.parse_args(sys.argv[1:])
+    options = argparser.parse_args(args)
 
     if options.log_to:
         logging.basicConfig(level=logging.INFO, filename=options.log_to)
