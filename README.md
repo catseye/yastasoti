@@ -1,7 +1,7 @@
 yastasoti
 =========
 
-_Version 0.2_
+_Version 0.3_
 
 Yet another script to archive stuff off teh internets.
 
@@ -87,7 +87,7 @@ Tested under Python 2.7.12.  Seems to work under Python 3.5.2 as well,
 but this is not so official.
 
 Requires `requests` Python library to make network requests.  Tested
-with `requests` version 2.17.3.
+with `requests` version 2.21.0.
 
 If `tqdm` Python library is installed, will display a nice progress bar.
 
