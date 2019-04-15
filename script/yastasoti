@@ -86,9 +86,9 @@ def download(url, dirname, filename):
 
 
 class LinkTraverser(object):
-    def __init__(self, links, article_root=None, ignore_urls=None, delay_between_requests=0.0, fragile=False):
+    def __init__(self, links, extant_path=None, ignore_urls=None, delay_between_requests=0.0, fragile=False):
         self.links = links
-        self.article_root = article_root
+        self.extant_path = extant_path or []
         self.ignore_urls = ignore_urls or []
         self.delay_between_requests = delay_between_requests
         self.fragile = fragile
@@ -127,9 +127,14 @@ class LinkTraverser(object):
                     else:
                         filename = url
                     filename = unquote(filename)
-                    filename = os.path.join(self.article_root, filename)
-                    if not os.path.exists(filename):
-                        raise ValueError('Local file "{}" does not exist'.format(filename))
+                    found = False
+                    for extant_dirname in self.extant_path:
+                        extant_filename = os.path.join(extant_dirname, filename)
+                        if os.path.exists(extant_filename):
+                            found = True
+                            break
+                    if not found:
+                        raise ValueError('Local file "{}" not found in extant-path'.format(filename))
                     continue
                 else:
                     response = self.handle_link(link)
@@ -224,11 +229,13 @@ def main(args):
     argparser.add_argument('--archive-via', metavar='ROUTERFILE', type=str, default=None,
         help='Download links and save each in the directory given in the router file'
     )
-    argparser.add_argument('--article-root', metavar='DIRNAME', type=str, default='.',
-        help='Directory in which local files found when checking or archiving links should be located'
-    )
     argparser.add_argument('--delay-between-requests', metavar='SECONDS', type=float, default=0.0,
         help='Delay (in seconds, fractions allowed) between successive network requests'
+    )
+    argparser.add_argument('--extant-path', metavar='DIRNAMES', type=str, default=None,
+        help='When finding a relative link that would resolve to local file, check that '
+             'that file exists in in this search path, which should be given as a '
+             'comma-delimited list of directory names'
     )
     argparser.add_argument('--fragile', action='store_true', default=False,
         help='Exit on first error of any nature when processing links'
@@ -255,7 +262,7 @@ def main(args):
         links.extend(data)
 
     common_kwargs = dict(
-        article_root=options.article_root,
+        extant_path=None if options.extant_path is None else options.extant_path.split(','),
         ignore_urls=[] if options.ignore_urls is None else options.ignore_urls.split(','),
         delay_between_requests=options.delay_between_requests,
         fragile=options.fragile,

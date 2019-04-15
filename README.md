@@ -1,7 +1,7 @@
 yastasoti
 =========
 
-_Version 0.3_
+_Version 0.4_
 
 Yet another script to archive stuff off teh internets.
 
@@ -28,13 +28,13 @@ It was split off from [Feedmark][], which doesn't itself need to support this fu
 
 #### Check all links in a set of Feedmark documents ####
 
-    feedmark --output-links article/*.md | yastasoti --article-root=article/ - | tee results.json
+    feedmark --output-links article/*.md | yastasoti --extant-path=article/ - | tee results.json
 
 This will make only `HEAD` requests to check that the resources exist.
 It will not fetch them.  The ones that could not be fetches will appear
 in `results.json`, and you can run yastasoti on that again to re-try:
 
-    yastasoti --article-root=article/ results.json | tee results2.json
+    yastasoti --extant-path=article/ results.json | tee results2.json
 
 #### Archive stuff off teh internets ####
 
@@ -96,6 +96,5 @@ If `tqdm` Python library is installed, will display a nice progress bar.
 *   Archive youtube links with youtube-dl.
 *   Handle failures (redirects, etc) better (detect 503 / "connection refused" better.)
 *   Allow use of an external tool like `wget` or `curl` to do fetching.
-*   Multiple `--article-roots`.
 
 [Feedmark]: http://catseye.tc/node/Feedmark
