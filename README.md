@@ -91,6 +91,10 @@ with `requests` version 2.21.0.
 
 If `tqdm` Python library is installed, will display a nice progress bar.
 
+(Or, if you would like to use Docker, you can pull a Docker image from
+[catseye/yastasoti on Docker Hub](https://hub.docker.com/r/catseye/yastasoti),
+following the instructions given on that page.)
+
 ### TODO ####
 
 *   Archive youtube links with youtube-dl.

@@ -233,8 +233,8 @@ def main(args):
         help='Delay (in seconds, fractions allowed) between successive network requests'
     )
     argparser.add_argument('--extant-path', metavar='DIRNAMES', type=str, default=None,
-        help='When finding a relative link that would resolve to local file, check that '
-             'that file exists in in this search path, which should be given as a '
+        help='When finding a relative link that would resolve to local file, assert that '
+             'a file by that name exists in this search path, which should be given as a '
              'comma-delimited list of directory names'
     )
     argparser.add_argument('--fragile', action='store_true', default=False,
