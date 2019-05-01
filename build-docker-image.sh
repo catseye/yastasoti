@@ -2,8 +2,8 @@
 
 # After building the image, you can run yastasoti from within it like:
 #
-# docker run --user $(id -u):$(id -g) -i -t -v "${PWD}:/usr/src/app/" yastasoti \
-#        yastasoti links.json --archive-to=./
+# docker run --user $(id -u):$(id -g) -i -t -v "${PWD}:/mnt/host/" yastasoti \
+#        yastasoti links.json --archive-to=out/
 #
 
 rm -rf script/*.pyc script/__pycache__
