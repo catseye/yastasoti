@@ -1,7 +1,14 @@
-yastasoti
-=========
+`yastasoti`
+===========
 
 _Version 0.4_
+| _Entry_ [@ catseye.tc](https://catseye.tc/node/yastasoti)
+| _See also:_ [ellsync](https://github.com/catseye/ellsync)
+∘ [shelf](https://github.com/catseye/shelf)
+
+- - - -
+
+<img align="right" src="images/yastasoti-logo.png?raw=true" />
 
 Yet another script to archive stuff off teh internets.
 
